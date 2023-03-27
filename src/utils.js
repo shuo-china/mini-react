@@ -20,3 +20,19 @@ export function isFn(fn) {
 export function isArray(arr) {
   return Array.isArray(arr)
 }
+
+export function isUndefined(s) {
+  return s === undefined
+}
+
+export function updateNode(node, nextVal) {
+  Object.entries(nextVal).forEach(([k, v]) => {
+    if (k === 'children') {
+      if (isStringOrNumber(v)) {
+        node.textContent = v
+      }
+    } else {
+      node[k] = v
+    }
+  })
+}
