@@ -12,6 +12,7 @@ import {
   HostComponent,
   HostText
 } from './ReactWorkTags'
+import { scheduleCallback } from './scheduler'
 import { Placement } from './utils'
 
 let wip = null
@@ -21,6 +22,7 @@ let wipRoot = null
 export function scheduleUpdateOnFiber(fiber) {
   wip = fiber
   wipRoot = fiber
+  scheduleCallback(workLoop)
 }
 
 function performUnitOfWork() {
@@ -73,8 +75,8 @@ function performUnitOfWork() {
   wip = null
 }
 
-function workLoop(IdleDeadline) {
-  while (wip && IdleDeadline.timeRemaining()) {
+function workLoop() {
+  while (wip) {
     performUnitOfWork()
   }
 
@@ -113,5 +115,3 @@ function getParentNode(wip) {
     tem = tem.return
   }
 }
-
-requestIdleCallback(workLoop)
