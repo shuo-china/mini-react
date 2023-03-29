@@ -105,6 +105,9 @@ function commitWorker(wip) {
   if (flags & Update && stateNode) {
     updateNode(stateNode, alternate.props, props)
   }
+  if (wip.deletions) {
+    commitDeletions(wip.deletions, stateNode || parentNode)
+  }
   // 提交子节点
   commitWorker(wip.child)
   // 提交兄弟
@@ -119,4 +122,18 @@ function getParentNode(wip) {
     }
     tem = tem.return
   }
+}
+
+function commitDeletions(deletions, parentNode) {
+  for (let i = 0; i < deletions.length; i++) {
+    parentNode.removeChild(getStateNode(deletions[i]))
+  }
+}
+
+function getStateNode(fiber) {
+  let tem = fiber
+  while (!tem.stateNode) {
+    tem = tem.child
+  }
+  return tem.stateNode
 }
