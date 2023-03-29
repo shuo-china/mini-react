@@ -25,12 +25,30 @@ export function isUndefined(s) {
   return s === undefined
 }
 
-export function updateNode(node, nextVal) {
+export function updateNode(node, prevVal, nextVal) {
+  Object.entries(prevVal).forEach(([k, v]) => {
+    if (k === 'children') {
+      if (isStringOrNumber(v)) {
+        node.textContent = ''
+      }
+    } else if (k.startsWith('on')) {
+      const eventName = k.slice(2).toLocaleLowerCase()
+      node.removeEventListener(eventName, v)
+    } else {
+      if (!(k in nextVal)) {
+        node[k] = ''
+      }
+    }
+  })
+
   Object.entries(nextVal).forEach(([k, v]) => {
     if (k === 'children') {
       if (isStringOrNumber(v)) {
         node.textContent = v
       }
+    } else if (k.startsWith('on')) {
+      const eventName = k.slice(2).toLocaleLowerCase()
+      node.addEventListener(eventName, v)
     } else {
       node[k] = v
     }

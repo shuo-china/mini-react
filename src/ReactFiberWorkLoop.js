@@ -13,7 +13,7 @@ import {
   HostText
 } from './ReactWorkTags'
 import { scheduleCallback } from './scheduler'
-import { Placement } from './utils'
+import { Placement, Update, updateNode } from './utils'
 
 let wip = null
 let wipRoot = null
@@ -22,6 +22,7 @@ let wipRoot = null
 export function scheduleUpdateOnFiber(fiber) {
   wip = fiber
   wipRoot = fiber
+
   scheduleCallback(workLoop)
 }
 
@@ -96,9 +97,13 @@ function commitWorker(wip) {
   }
   // 提交自己
   const parentNode = getParentNode(wip.return)
-  const { flags, stateNode } = wip
+  const { flags, stateNode, props, alternate } = wip
+
   if (flags & Placement && stateNode) {
     parentNode.appendChild(stateNode)
+  }
+  if (flags & Update && stateNode) {
+    updateNode(stateNode, alternate.props, props)
   }
   // 提交子节点
   commitWorker(wip.child)

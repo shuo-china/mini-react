@@ -19,7 +19,9 @@ export function createFiber(vnode, returnFiber) {
     flags: Placement,
     alternate: null,
     deletions: null,
-    index: null
+    index: null,
+    // 函数组件中的Hook0
+    memorizedState: null
   }
 
   const { type } = vnode
