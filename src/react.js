@@ -1,10 +1,10 @@
 import Component from './Component'
-import { useReducer } from './hooks'
+import { useReducer, useState } from './hooks'
 
 const React = {
   Component
 }
 
-export { Component, useReducer }
+export { Component, useReducer, useState }
 
 export default React
