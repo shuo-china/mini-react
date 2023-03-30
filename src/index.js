@@ -1,10 +1,24 @@
-import { useReducer, useState, Component } from './react'
+import {
+  useReducer,
+  useState,
+  Component,
+  useEffect,
+  useLayoutEffect
+} from './react'
 import ReactDOM from './react-dom'
 
 function FunctionComponent(props) {
   //                                  (state, action) => newState
   const [count, setCount] = useReducer(x => x + 1, 0)
   const [num, setNum] = useState(4)
+
+  useEffect(() => {
+    console.log('hhh', num)
+  }, [num])
+
+  // useLayoutEffect(() => {
+  //   console.log('sss', num)
+  // }, [])
 
   return (
     <div className="border">

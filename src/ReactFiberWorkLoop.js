@@ -111,10 +111,31 @@ function commitWorker(wip) {
   if (wip.deletions) {
     commitDeletions(wip.deletions, stateNode || parentNode)
   }
+
+  if (wip.tag === FunctionComponent) {
+    invokeHooks(wip)
+  }
+
   // 提交子节点
   commitWorker(wip.child)
   // 提交兄弟
   commitWorker(wip.sibling)
+}
+
+function invokeHooks(wip) {
+  const { updateQueueEffect, updateQueueLayout } = wip
+
+  for (let i = 0; i < updateQueueLayout.length; i++) {
+    const effect = updateQueueLayout[i]
+    effect.create()
+  }
+
+  for (let i = 0; i < updateQueueEffect.length; i++) {
+    const effect = updateQueueEffect[i]
+    scheduleCallback(() => {
+      effect.create()
+    })
+  }
 }
 
 function getHostSibling(sibling) {

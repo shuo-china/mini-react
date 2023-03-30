@@ -1,12 +1,16 @@
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop'
+import { HookLayout, HookPassive, areHookInputsEqual } from './utils'
 
 let currentlyRenderingFiber = null
 let workInProgressHook = null
+let currentHook = null
 
 export function renderWithHooks(wip) {
   currentlyRenderingFiber = wip
   currentlyRenderingFiber.memorizedState = null
   workInProgressHook = null
+  currentlyRenderingFiber.updateQueueEffect = []
+  currentlyRenderingFiber.updateQueueLayout = []
 }
 
 function updateWorkInProgressHook() {
@@ -18,11 +22,14 @@ function updateWorkInProgressHook() {
     currentlyRenderingFiber.memorizedState = current.memorizedState
     if (workInProgressHook) {
       workInProgressHook = hook = workInProgressHook.next
+      currentHook = currentHook.next
     } else {
       // hook0
       workInProgressHook = hook = currentlyRenderingFiber.memorizedState
+      currentHook = current.memorizedState
     }
   } else {
+    currentHook = null
     // 初次渲染
     hook = {
       memorizedState: null,
@@ -66,4 +73,40 @@ function dispatchReducerAction(fiber, hook, reducer, action) {
 
 export function useState(initialState) {
   return useReducer(null, initialState)
+}
+
+function updateEffectImp(hooksFlags, create, deps) {
+  const hook = updateWorkInProgressHook()
+
+  if (currentHook) {
+    const prevEffect = currentHook.memorizedState
+    if (deps) {
+      const prevDeps = prevEffect.deps
+      if (areHookInputsEqual(deps, prevDeps)) {
+        return
+      }
+    }
+  }
+
+  const effect = {
+    hooksFlags,
+    create,
+    deps
+  }
+
+  hook.memorizedState = effect
+
+  if (hooksFlags & HookPassive) {
+    currentlyRenderingFiber.updateQueueEffect.push(effect)
+  } else if (hooksFlags & HookLayout) {
+    currentlyRenderingFiber.updateQueueLayout.push(effect)
+  }
+}
+
+export function useEffect(create, deps) {
+  return updateEffectImp(HookPassive, create, deps)
+}
+
+export function useLayoutEffect(create, deps) {
+  return updateEffectImp(HookLayout, create, deps)
 }
