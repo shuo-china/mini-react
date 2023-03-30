@@ -4,14 +4,37 @@ import ReactDOM from './react-dom'
 function FunctionComponent(props) {
   //                                  (state, action) => newState
   const [count, setCount] = useReducer(x => x + 1, 0)
-  const [num, setNum] = useState(0)
+  const [num, setNum] = useState(4)
 
   return (
     <div className="border">
       <p>{props.name}</p>
       <button onClick={() => setCount()}>{count}</button>
-      <button onClick={() => setNum(num + 1)}>{num}</button>
+      <button
+        onClick={() => {
+          if (num === 0) {
+            setNum(4)
+          } else {
+            setNum(num - 2)
+          }
+        }}
+      >
+        {num}
+      </button>
       {count % 2 ? <div>111</div> : <span>222</span>}
+      <ul>
+        {num === 2
+          ? [0, 1, 3, 4].map(item => {
+              return <li key={item}>{item}</li>
+            })
+          : [0, 1, 2, 3, 4].map(item => {
+              return <li key={item}>{item}</li>
+            })}
+
+        {/* {[0, 1, 2, 3, 4].map(item => {
+          return num >= item ? <li key={item}>{item}</li> : null
+        })} */}
+      </ul>
     </div>
   )
 }

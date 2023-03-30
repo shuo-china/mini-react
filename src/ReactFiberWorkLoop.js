@@ -95,12 +95,15 @@ function commitWorker(wip) {
   if (!wip) {
     return
   }
+
   // 提交自己
   const parentNode = getParentNode(wip.return)
   const { flags, stateNode, props, alternate } = wip
 
   if (flags & Placement && stateNode) {
-    parentNode.appendChild(stateNode)
+    const before = getHostSibling(wip.sibling)
+    insertOrAppendPlacementNode(stateNode, before, parentNode)
+    // parentNode.appendChild(stateNode)
   }
   if (flags & Update && stateNode) {
     updateNode(stateNode, alternate.props, props)
@@ -112,6 +115,23 @@ function commitWorker(wip) {
   commitWorker(wip.child)
   // 提交兄弟
   commitWorker(wip.sibling)
+}
+
+function getHostSibling(sibling) {
+  while (sibling) {
+    if (sibling.stateNode && !(sibling.flags & Placement)) {
+      return sibling.stateNode
+    }
+    sibling = sibling.sibling
+  }
+}
+
+function insertOrAppendPlacementNode(stateNode, before, parentNode) {
+  if (before) {
+    parentNode.insertBefore(stateNode, before)
+  } else {
+    parentNode.appendChild(stateNode)
+  }
 }
 
 function getParentNode(wip) {

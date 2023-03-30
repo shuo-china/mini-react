@@ -1,6 +1,6 @@
-import { createFiber } from './ReactFiber'
-import { isArray, isStringOrNumber, Update, updateNode } from './utils'
+import { updateNode } from './utils'
 import { renderWithHooks } from './hooks'
+import { reconcileChildren } from './ReactChildFiber'
 
 export function updateHostComponent(wip) {
   if (!wip.stateNode) {
@@ -32,61 +32,5 @@ export function updateFragmentComponent(wip) {
 export function updateHostText(wip) {
   if (!wip.stateNode) {
     wip.stateNode = document.createTextNode(wip.props.children)
-  }
-}
-
-// 首次渲染（创建子Fiber）
-// 协调(diff)
-function reconcileChildren(wip, children) {
-  if (isStringOrNumber(children)) {
-    return
-  }
-  const newChildren = isArray(children) ? children : [children]
-  let oldFiber = wip.alternate?.child
-  let previousNewFiber = null
-  for (let i = 0; i < newChildren.length; i++) {
-    const newChild = newChildren[i]
-    if (newChild == null) {
-      continue
-    }
-
-    const newFiber = createFiber(newChild, wip)
-    const same = sameNode(newFiber, oldFiber)
-    if (same) {
-      Object.assign(newFiber, {
-        stateNode: oldFiber.stateNode,
-        alternate: oldFiber,
-        flags: Update
-      })
-    }
-
-    if (!same && oldFiber) {
-      deleteChild(wip, oldFiber)
-    }
-
-    if (oldFiber) {
-      oldFiber = oldFiber.sibling
-    }
-
-    if (previousNewFiber === null) {
-      wip.child = newFiber
-    } else {
-      previousNewFiber.sibling = newFiber
-    }
-
-    previousNewFiber = newFiber
-  }
-}
-
-function sameNode(a, b) {
-  return a && b && a.type === b.type && a.key === b.key
-}
-
-function deleteChild(returnFiber, childToDelete) {
-  const deletions = returnFiber.deletions
-  if (deletions) {
-    returnFiber.deletions.push(childToDelete)
-  } else {
-    returnFiber.deletions = [childToDelete]
   }
 }
